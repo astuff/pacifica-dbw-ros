@@ -15,7 +15,7 @@ references:
         apt-get -qq update
         apt-add-repository ppa:jwhitleyastuff/kvaser-linux
         apt-get -qq update
-        apt-get install -y kvaser-canlib-dev
+        apt-get install -y kvaser-canlib-dev ros-$ROS_DISTRO-kvaser-interface
 
   install_rosdeps: &install_rosdeps
     run:
