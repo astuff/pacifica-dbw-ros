@@ -10,16 +10,16 @@ references:
 
   install_prereqs: &install_prereqs
     run:
-      name: Install Test Prerequisites
+      name: Install Prerequisites
       command: |
         apt-get -qq update
         apt-add-repository ppa:jwhitleyastuff/kvaser-linux
         apt-get -qq update
-        apt-get install -y kvaser-canlib-dev ros-$ROS_DISTRO-kvaser-interface
+        apt-get install -y kvaser-canlib-dev
 
   install_rosdeps: &install_rosdeps
     run:
-      name: Prepare Workspace
+      name: Install ROS Dependencies
       command: |
         rosdep update
         rosdep install --from-paths . --ignore-src -y
@@ -55,6 +55,7 @@ jobs:
     steps:
       - checkout
       - *setup_container
+      - *install_prereqs
       - *install_rosdeps
       - *create_workspace
       - *build_workspace
@@ -67,6 +68,7 @@ jobs:
     steps:
       - checkout
       - *setup_container
+      - *install_prereqs
       - *install_rosdeps
       - *create_workspace
       - *build_workspace
