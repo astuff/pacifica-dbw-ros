@@ -1,32 +1,64 @@
-version: 2
+version: 2.0
+
+references:
+  setup_container: &setup_container
+    run:
+      name: Set Up Container
+      command: |
+        apt-get update -qq
+        source `find /opt/ros -name setup.bash | sort | head -1`
+
+  install_prereqs: &install_prereqs
+    run:
+      name: Install Test Prerequisites
+      command: |
+        apt-get -qq update
+        apt-add-repository ppa:jwhitleyastuff/kvaser-linux
+        apt-get -qq update
+        apt-get install -y kvaser-canlib-dev
+
+  install_rosdeps: &install_rosdeps
+    run:
+      name: Prepare Workspace
+      command: |
+        rosdep update
+        rosdep install --from-paths . --ignore-src -y
+
+  create_workspace: &create_workspace
+    run:
+      name: Create Workspace
+      command: |
+        cd ..
+        catkin init
+        catkin config --extend /opt/ros/$ROS_DISTRO
+
+  build_workspace: &build_workspace
+    run:
+      name: Build
+      command: |
+        cd ..
+        catkin build
+
+  test_workspace: &test_workspace
+    run:
+      name: Run Tests
+      command: |
+        source `find /opt/ros -name setup.bash | sort | head -1`
+        cd ..
+        catkin run_tests
+        catkin_test_results
+
 jobs:
   kinetic:
     docker:
       - image: autonomoustuff/docker-builds:kinetic-ros-base
     steps:
       - checkout
-      - run:
-          name: Set Up Container
-          command: |
-            apt-get update -qq
-            source `find /opt/ros -name setup.bash | sort | head -1`
-            rosdep update
-            rosdep install --from-paths . --ignore-src -y
-            cd ..
-            catkin init
-            catkin config --extend /opt/ros/$ROS_DISTRO
-      - run:
-          name: Build
-          command: |
-            cd ..
-            catkin build
-      - run:
-          name: Run Tests
-          command: |
-            source `find /opt/ros -name setup.bash | sort | head -1`
-            cd ..
-            catkin run_tests
-            catkin_test_results
+      - *setup_container
+      - *install_rosdeps
+      - *create_workspace
+      - *build_workspace
+      - *test_workspace
     working_directory: ~/src
 
   melodic:
@@ -34,28 +66,11 @@ jobs:
       - image: autonomoustuff/docker-builds:melodic-ros-base
     steps:
       - checkout
-      - run:
-          name: Set Up Container
-          command: |
-            apt-get update -qq
-            source `find /opt/ros -name setup.bash | sort | head -1`
-            rosdep update
-            rosdep install --from-paths . --ignore-src -y
-            cd ..
-            catkin init
-            catkin config --extend /opt/ros/$ROS_DISTRO
-      - run:
-          name: Build
-          command: |
-            cd ..
-            catkin build
-      - run:
-          name: Run Tests
-          command: |
-            source `find /opt/ros -name setup.bash | sort | head -1`
-            cd ..
-            catkin run_tests
-            catkin_test_results
+      - *setup_container
+      - *install_rosdeps
+      - *create_workspace
+      - *build_workspace
+      - *test_workspace
     working_directory: ~/src
 
 workflows:
